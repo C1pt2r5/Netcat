@@ -1,4 +1,5 @@
 import sys, socket, getopt, threading, subprocess, signal, time
+
 class NetCat:
     def __init__(self, target, port):
         self.listen = False
@@ -49,15 +50,13 @@ class NetCat:
                     with open(self.upload_destination, "wb") as file_descriptor:
                         file_descriptor.write(file_buffer.encode('utf-8'))
                     try:
-                        client_socket.send(
-                            f"Successfully saved file to {self.upload_destination}\r\n".encode('utf-8'))
+                        client_socket.send(f"Successfully saved file to {self.upload_destination}\r\n".encode('utf-8'))
                     except (BrokenPipeError, ConnectionResetError):
                         print("[!] Couldn't send success message - connection lost")
                 except OSError as e:
                     print(f"[!] File operation failed: {str(e)}")
                     try:
-                        client_socket.send(
-                            f"Failed to save file to {self.upload_destination}\r\n".encode('utf-8'))
+                        client_socket.send(f"Failed to save file to {self.upload_destination}\r\n".encode('utf-8'))
                     except (BrokenPipeError, ConnectionResetError):
                         print("[!] Couldn't send error message - connection lost")
 
@@ -73,10 +72,7 @@ class NetCat:
             if self.command:
                 while self.running:
                     try:
-                        # Send prompt
                         client_socket.send(b"<Target:#> ")
-                        
-                        # Receive command
                         cmd_buffer = b''
                         while b"\n" not in cmd_buffer and self.running:
                             try:
@@ -88,23 +84,22 @@ class NetCat:
                                 continue
                             except (ConnectionResetError, BrokenPipeError):
                                 raise
-                        
+
                         if not self.running:
                             break
 
-                        # Execute command and send response
                         try:
                             cmd = cmd_buffer.decode().strip()
                             if cmd.lower() in ['exit', 'quit']:
                                 print("[*] User requested exit")
                                 break
-                                
+
                             output = self.run_command(cmd)
                             if output:
                                 client_socket.send(output + b"\n")
                             else:
                                 client_socket.send(b"Command completed without output\n")
-                                
+
                         except (BrokenPipeError, ConnectionResetError):
                             print("[!] Connection lost while sending response")
                             break
@@ -133,6 +128,7 @@ class NetCat:
                 print("[*] Client connection closed")
             except:
                 pass
+
     def server_loop(self):
         server = None
         try:
@@ -148,11 +144,7 @@ class NetCat:
                 try:
                     client_socket, addr = server.accept()
                     print(f"[*] Accepted connection from {addr[0]}:{addr[1]}")
-                    
-                    client_thread = threading.Thread(
-                        target=self.handle_client,
-                        args=(client_socket,)
-                    )
+                    client_thread = threading.Thread(target=self.handle_client, args=(client_socket,))
                     client_thread.daemon = True
                     self.threads.append(client_thread)
                     client_thread.start()
@@ -171,12 +163,12 @@ class NetCat:
                     print("[*] Server socket closed")
                 except:
                     pass
-
             for thread in self.threads:
                 try:
                     thread.join(timeout=1.0)
                 except threading.ThreadError:
                     pass
+
     def client_sender(self, buffer):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -190,7 +182,6 @@ class NetCat:
                     return
             while self.running:
                 try:
-                    # Receive response from server
                     recv_len = 1
                     response = b''
                     while recv_len:
@@ -201,7 +192,6 @@ class NetCat:
                             break
                     if response:
                         print(response.decode('utf-8'), end='')
-                    # Get next command
                     buffer = input()
                     if not self.running:
                         break
@@ -234,9 +224,10 @@ class NetCat:
                 client.close()
             except:
                 pass
-    def main():
-        if len(sys.argv[1:]) == 0:
-            print("Custom Netcat")
+
+def main():
+    if len(sys.argv[1:]) == 0:
+        print("Custom Netcat")
         print("\nSYNOPSIS")
         print("    netcat.py [OPTIONS...]\n")
         print("OPTIONS")
@@ -248,7 +239,6 @@ class NetCat:
         print("    -p, --port=<port>         Specify target port number")
         print()
         sys.exit(0)
-        
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu:",
@@ -277,9 +267,6 @@ class NetCat:
         print(str(err))
         main()
 
-    signal.signal(signal.SIGINT, toolkit.signal_handler)
-    signal.signal(signal.SIGTERM, toolkit.signal_handler)
-
     try:
         if not toolkit.listen and len(toolkit.target) and toolkit.port > 0:
             buffer = sys.stdin.read()
@@ -295,8 +282,9 @@ class NetCat:
         toolkit.running = False
         print("[*] Shutdown complete")
         sys.exit(0)
-    
 
 if __name__ == "__main__":
     toolkit = NetCat("", 0)
+    signal.signal(signal.SIGINT, toolkit.signal_handler)
+    signal.signal(signal.SIGTERM, toolkit.signal_handler)
     main()
