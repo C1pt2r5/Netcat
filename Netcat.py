@@ -27,7 +27,7 @@ class NetCat:
             output = str(e).encode()
         return output
 
-        def handle_client(self, client_socket):
+    def handle_client(self, client_socket):
         try:
             if len(self.upload_destination):
                 file_buffer = ""
@@ -133,7 +133,7 @@ class NetCat:
                 print("[*] Client connection closed")
             except:
                 pass
-       def server_loop(self):
+    def server_loop(self):
         server = None
         try:
             if not len(self.target):
@@ -177,7 +177,7 @@ class NetCat:
                     thread.join(timeout=1.0)
                 except threading.ThreadError:
                     pass
-          def client_sender(self, buffer):
+    def client_sender(self, buffer):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             print(f"[*] Connecting to {self.target}:{self.port}")
@@ -235,8 +235,8 @@ class NetCat:
             except:
                 pass
     def main():
-    if len(sys.argv[1:]) == 0:
-        print("Custom Netcat")
+        if len(sys.argv[1:]) == 0:
+            print("Custom Netcat")
         print("\nSYNOPSIS")
         print("    netcat.py [OPTIONS...]\n")
         print("OPTIONS")
@@ -248,6 +248,7 @@ class NetCat:
         print("    -p, --port=<port>         Specify target port number")
         print()
         sys.exit(0)
+        
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu:",
@@ -294,6 +295,7 @@ class NetCat:
         toolkit.running = False
         print("[*] Shutdown complete")
         sys.exit(0)
+    
 
 if __name__ == "__main__":
     toolkit = NetCat("", 0)
